@@ -1,4 +1,5 @@
 using SocialService.Configurations;
+using SocialService.Models.InstagramModels;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.Configure<XApiSettings>(builder.Configuration.GetSection("XApiSettings"));
 builder.Services.AddHttpClient<XApiService>();
+builder.Services.Configure<InstagramApiSettings>(builder.Configuration.GetSection("InstagramApiSettings"));
+builder.Services.Configure<User>(builder.Configuration.GetSection("InstagramMockUser"));
+builder.Services.AddSingleton<InstagramService>();
 
 var app = builder.Build();
 
