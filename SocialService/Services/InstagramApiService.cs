@@ -30,23 +30,33 @@ public class InstagramService
         return response.Content;
     }
 
-    public async Task<string> CreatePostAsync(string imageUrl, string caption)
+    [HttpPost("create-post")]
+    public async Task<IActionResult> CreatePost([FromBody] CreatePostRequest request)
     {
-        var client = new RestClient("https://graph.instagram.com/v21.0");
-        var request = new RestRequest($"{_users.Id}/media", Method.Post);
-
-        request.AddParameter("image_url", imageUrl);
-        request.AddParameter("caption", caption);
-        request.AddParameter("access_token", _users.AccessToken.AccessTokenLong);
-
-        var response = await client.ExecuteAsync(request);
-        if (!response.IsSuccessful)
+        try
         {
-            throw new Exception("Failed to create post: " + response.ErrorMessage);
+            var result = await _instagramService.CreatePostAsync(request.ImageUrl, request.Caption, request.VideoUrl, request.Is_Carousel_Item, request.Media_Type, request.Children);
+            return Ok(result);
         }
-
-        return response.Content;
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
+
+[HttpPost("publish-post")]
+public async Task<IActionResult> PublishPost([FromBody] PublishPostRequest request)
+{
+    try
+    {
+        var result = await _instagramService.PublishPostAsync(request.CreationId);
+        return Ok(result);
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(ex.Message);
+    }
+}
 
     public async Task<string> PublishPostAsync(string creationId)
     {
