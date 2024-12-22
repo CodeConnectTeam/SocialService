@@ -62,5 +62,30 @@ namespace SocialService.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+
+        [HttpDelete("DeleteTweet/{tweetId}")]
+        public async Task<ActionResult> DeleteTweet(string tweetId)
+        {
+            try
+            {
+                var result = await _xApiService.DeleteTweetAsync(tweetId);
+                if (result)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
     }
 }

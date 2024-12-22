@@ -18,9 +18,9 @@ public class XApiService
         _httpClient = httpClient;
         _settings = settings.Value;
 
-        // Bearer Token ile kimlik doğrulama
+        
         _httpClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("AAAAAAAAAAAAAAAAAAAAAEZ7wgEAAAAATAK2GLZ94IqKWL69%2BxJSjOk%2FD2A%3DLwB5IP5jcJpeZToooiv6WZyomukO6hvNHeuFt8HpbOQTykr7Os", _settings.BearerToken);
+            new AuthenticationHeaderValue("Bearer", _settings.BearerToken);
     }
 
     public async Task<string?> GetUserIdByUsernameAsync(string username)
@@ -43,11 +43,11 @@ public class XApiService
 
     public async Task<List<Tweet>> GetUserTweetsAsync(string username, int maxResults = 10)
     {
-        Console.WriteLine($"Using Bearer Token: {_settings.BearerToken}");
+        
 
         var userId  = await GetUserIdByUsernameAsync(username);
 
-        var url = $"https://api.x.com/2/users/{userId}/tweets?max_results={maxResults}&tweet.fields=public_metrics";
+        var url = $"https://api.x.com/2/users/{userId}/tweets?max_results={maxResults}";
 
         HttpResponseMessage response = await _httpClient.GetAsync(url);
 
@@ -100,6 +100,22 @@ public class XApiService
         else
         {
             throw new Exception("Tweet gönderilemedi: " + response.ReasonPhrase);
+        }
+    }
+
+    public async Task<bool> DeleteTweetAsync(string tweetId)
+    {
+        var url = $"https://api.x.com/2/tweets/{tweetId}";
+
+        HttpResponseMessage response = await _httpClient.DeleteAsync(url);
+
+        if (response.IsSuccessStatusCode)
+        {
+            return true;
+        }
+        else
+        {
+            throw new Exception("Tweet silinemedi: " + response.ReasonPhrase);
         }
     }
 }
