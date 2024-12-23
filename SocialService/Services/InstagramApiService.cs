@@ -30,33 +30,44 @@ public class InstagramService
         return response.Content;
     }
 
-    [HttpPost("create-post")]
-    public async Task<IActionResult> CreatePost([FromBody] CreatePostRequest request)
+    public async Task<string> CreatePostAsync(string imageUrl = null,
+                                              string caption = null,
+                                              string videoUrl = null,
+                                              bool? is_carousel_item = null,
+                                              string media_type = null,
+                                              string children = null)
     {
-        try
-        {
-            var result = await _instagramService.CreatePostAsync(request.ImageUrl, request.Caption, request.VideoUrl, request.Is_Carousel_Item, request.Media_Type, request.Children);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-    }
+        var client = new RestClient("https://graph.instagram.com/v21.0");
+        var request = new RestRequest($"{_users.Id}/media", Method.Post);
 
-[HttpPost("publish-post")]
-public async Task<IActionResult> PublishPost([FromBody] PublishPostRequest request)
-{
-    try
-    {
-        var result = await _instagramService.PublishPostAsync(request.CreationId);
-        return Ok(result);
+        if (!string.IsNullOrEmpty(imageUrl))
+            request.AddParameter("image_url", imageUrl);
+
+        if (!string.IsNullOrEmpty(caption))
+            request.AddParameter("caption", caption);
+
+        if (!string.IsNullOrEmpty(videoUrl))
+            request.AddParameter("video_url", videoUrl);
+
+        if (is_carousel_item.HasValue)
+            request.AddParameter("is_carousel_item", is_carousel_item.Value);
+
+        if (!string.IsNullOrEmpty(media_type))
+            request.AddParameter("media_type", media_type);
+
+        if (!string.IsNullOrEmpty(children))
+            request.AddParameter("children", children);
+
+        request.AddParameter("access_token", _users.AccessToken.AccessTokenLong);
+
+        var response = await client.ExecuteAsync(request);
+        if (!response.IsSuccessful)
+        {
+            throw new Exception("Failed to create post: " + response.ErrorMessage);
+        }
+
+        return response.Content;
     }
-    catch (Exception ex)
-    {
-        return BadRequest(ex.Message);
-    }
-}
 
     public async Task<string> PublishPostAsync(string creationId)
     {
