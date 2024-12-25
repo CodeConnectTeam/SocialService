@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using RestSharp;
 using SocialService.Configurations;
 using SocialService.Models.InstagramModels;
+using System.Text.Json;
 
 public class InstagramService
 {
@@ -86,21 +87,25 @@ public class InstagramService
         return response.Content;
     }
 
-    public async Task<string> GetMetricsAsync()
+    public async Task<List<InstagramMedia>> GetMetricsAsync()
     {
         var client = new RestClient("https://graph.instagram.com/v21.0");
         var request = new RestRequest($"{_users.Id}/media", Method.Get);
 
-        request.AddQueryParameter("fields", "caption,like_count,comments_count,media_url,permalink,media_type");
+        request.AddQueryParameter("fields",
+            "caption,like_count,comments_count,media_url,permalink,media_type");
         request.AddQueryParameter("access_token", _users.AccessToken.AccessTokenLong);
 
         var response = await client.ExecuteAsync(request);
-        if (!response.IsSuccessful)
-        {
-            throw new Exception("Failed to fetch metrics: " + response.ErrorMessage);
-        }
 
-        return response.Content;
+        if (!response.IsSuccessful)
+            throw new Exception("Failed to fetch metrics: " + response.ErrorMessage);
+
+        
+        var result = System.Text.Json.JsonSerializer.Deserialize<GetMetricsResponse>(response.Content);
+
+        
+        return result?.Data ?? new List<InstagramMedia>();
     }
 
     public async Task<string> GetCommentsAsync(string mediaId)

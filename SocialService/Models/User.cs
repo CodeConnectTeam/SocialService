@@ -1,14 +1,18 @@
-﻿namespace SocialService.Models
+﻿using System.Text.Json.Serialization;
+
+namespace SocialService.Models
 {
     public class UserResponse
     {
-        public User User { get; set; }
+        [JsonPropertyName("data")]
+        public User data { get; set; }   
     }
 
     public class User
     {
-        public string Id { get; set; }
-        public string? Name { get; set; }
-        public string? Username { get; set; }
+        public string? id { get; set; }
+        public string? name { get; set; }
+        public string? username { get; set; }
     }
+
 }

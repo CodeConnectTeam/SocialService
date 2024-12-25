@@ -33,7 +33,7 @@ public class XApiService
         {
             string content = await response.Content.ReadAsStringAsync();
             var user = JsonSerializer.Deserialize<UserResponse>(content);
-            return user?.User?.Id;
+            return user?.data?.id;
         }
         else
         {
@@ -64,7 +64,7 @@ public class XApiService
     }
 
     
-    public async Task<Tweet> GetTweetMetricsAsync(string tweetId)
+    public async Task<TweetResponse> GetTweetMetricsAsync(string tweetId)
     {
         var url = $"https://api.x.com/2/tweets/{tweetId}?tweet.fields=public_metrics";
 
@@ -73,7 +73,7 @@ public class XApiService
         if (response.IsSuccessStatusCode)
         {
             string content = await response.Content.ReadAsStringAsync();
-            var tweet = JsonSerializer.Deserialize<Tweet>(content);
+            var tweet = JsonSerializer.Deserialize<TweetResponse>(content);
             return tweet;
         }
         else
