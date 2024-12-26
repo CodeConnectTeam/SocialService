@@ -97,14 +97,13 @@ public class XApiService
 
     public async Task<Tweet> PostTweetAsync(string tweetText)
     {
-        var authenticator = new OAuth1Authenticator
-        {
-            ConsumerKey = _settings.ApiKey,
-            ConsumerSecret = _settings.ApiSecretKey,
-            Token = _settings.AccessToken,
-            TokenSecret = _settings.AccessSecret,
-            SignatureMethod = OAuthSignatureMethod.HmacSha1
-        };
+        var authenticator = OAuth1Authenticator.ForAccessToken(
+        _settings.ApiKey,
+        _settings.ApiSecretKey,
+        _settings.AccessToken,
+        _settings.AccessSecret,
+        OAuthSignatureMethod.HmacSha1
+        );
 
         var options = new RestClientOptions("https://api.x.com")
         {
