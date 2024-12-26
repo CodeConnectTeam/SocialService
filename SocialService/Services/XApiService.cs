@@ -44,13 +44,13 @@ public class XApiService
         }
     }
 
-    public async Task<List<Tweet>> GetUserTweetsAsync(string username, int maxResults = 10)
+    public async Task<List<Tweet>> GetUserTweetsAsync(string username)
     {
         
 
         var userId  = await GetUserIdByUsernameAsync(username);
 
-        var url = $"https://api.x.com/2/users/{userId}/tweets?max_results={maxResults}";
+        var url = $"https://api.x.com/2/users/{userId}/tweets";
 
         HttpResponseMessage response = await _httpClient.GetAsync(url);
 
@@ -58,7 +58,16 @@ public class XApiService
         {
             string content = await response.Content.ReadAsStringAsync();
             var tweetsResponse = JsonSerializer.Deserialize<GetTweetsResponse>(content);
-            return tweetsResponse?.Tweets ?? new List<Tweet>();
+            var tweetList = tweetsResponse?.Tweets;
+            foreach(var tw in tweetList)
+            {
+                tw.PublicMetrics = GetTweetMetricsAsync(tw.Id).Result.Data;
+
+            }
+
+            return tweetList;
+             
+            
         }
         else
         {

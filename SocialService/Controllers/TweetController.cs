@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SocialService.Models;
+using SocialService.Models.XModels;
 
 namespace SocialService.Controllers
 {
@@ -14,25 +15,21 @@ namespace SocialService.Controllers
             _xApiService = xApiService;
         }
 
-
-
-        
-        [HttpGet("GetTweetMetrics/{tweetId}")]
-        public async Task<ActionResult<Tweet>> GetTweetMetrics(string tweetId)
+        [HttpGet("GetUserTweets/{username}")]
+        public async Task<ActionResult<List<Tweet>>> GetUserTweets(string username)
         {
 
             try
             {
-                var tweet = await _xApiService.GetTweetMetricsAsync(tweetId);
-                return Ok(tweet);
+                var tweets = await _xApiService.GetUserTweetsAsync(username);
+                return Ok(tweets);
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                return BadRequest(exception.Message);
+                return BadRequest(ex.Message);
             }
         }
 
-        
         [HttpPost]
         public async Task<ActionResult<Tweet>> PostTweet([FromBody] string tweetText)
         {
@@ -48,20 +45,7 @@ namespace SocialService.Controllers
         }
 
         
-        [HttpGet("GetUserTweets/{username}")]
-        public async Task<ActionResult<List<Tweet>>> GetUserTweets(string username, int maxResults = 10)
-        {
-
-            try
-            {
-                var tweets = await _xApiService.GetUserTweetsAsync(username, maxResults);
-                return Ok(tweets);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        
 
 
         [HttpDelete("DeleteTweet/{tweetId}")]
