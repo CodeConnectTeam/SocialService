@@ -135,9 +135,24 @@ public class XApiService
 
     public async Task<bool> DeleteTweetAsync(string tweetId)
     {
-        var url = $"https://api.x.com/2/tweets/{tweetId}";
+        var authenticator = OAuth1Authenticator.ForAccessToken(
+        _settings.ApiKey,
+        _settings.ApiSecretKey,
+        _settings.AccessToken,
+        _settings.AccessSecret,
+        OAuthSignatureMethod.HmacSha1
+        );
 
-        HttpResponseMessage response = await _httpClient.DeleteAsync(url);
+        var options = new RestClientOptions("https://api.x.com")
+        {
+            Authenticator = authenticator
+        };
+
+        var client = new RestClient(options);
+
+
+        var request = new RestRequest($"/2/tweets/{tweetId}", Method.Delete);
+        var response = await client.ExecuteAsync(request);
 
         if (response.IsSuccessStatusCode)
         {
@@ -145,7 +160,7 @@ public class XApiService
         }
         else
         {
-            throw new Exception("Tweet silinemedi: " + response.ReasonPhrase);
+            throw new Exception($"Tweet silinemedi:  + { response.StatusCode } - { response.Content}");
         }
     }
 }
