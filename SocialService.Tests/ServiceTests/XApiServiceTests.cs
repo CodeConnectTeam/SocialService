@@ -7,6 +7,7 @@ using Moq;
 using Moq.Protected;
 using SocialService.Configurations;
 using SocialService.Models;
+using SocialService.Models.XModels;
 using Xunit;
 
 public class XApiServiceTests

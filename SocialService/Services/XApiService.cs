@@ -4,9 +4,12 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using RestSharp.Authenticators.OAuth;
+using RestSharp.Authenticators;
+using RestSharp;
 using SocialService.Configurations;
-using SocialService.Models;
-using Tweetinvi.Models.V2;
+using SocialService.Models.XModels;
+
 
 public class XApiService
 {
@@ -82,25 +85,44 @@ public class XApiService
         }
     }
 
-    
+
     public async Task<Tweet> PostTweetAsync(string tweetText)
     {
-        var url = "https://api.x.com/2/tweets";
-        var tweetData = new { text = tweetText };
-        var content = new StringContent(JsonSerializer.Serialize(tweetData), Encoding.UTF8, "application/json");
-
-        HttpResponseMessage response = await _httpClient.PostAsync(url, content);
-
-        if (response.IsSuccessStatusCode)
+        var authenticator = new OAuth1Authenticator
         {
-            string resultContent = await response.Content.ReadAsStringAsync();
-            var resultTweet = JsonSerializer.Deserialize<Tweet>(resultContent);
-            return resultTweet;
-        }
-        else
+            ConsumerKey = _settings.ApiKey,
+            ConsumerSecret = _settings.ApiSecretKey,
+            Token = _settings.AccessToken,
+            TokenSecret = _settings.AccessSecret,
+            SignatureMethod = OAuthSignatureMethod.HmacSha1
+        };
+
+        var options = new RestClientOptions("https://api.x.com")
         {
-            throw new Exception("Tweet gönderilemedi: " + response.ReasonPhrase);
+            Authenticator = authenticator
+        };
+
+        var client = new RestClient(options);
+
+        
+        var request = new RestRequest("/2/tweets", Method.Post);
+        request.AddHeader("Content-Type", "application/json");
+
+        
+        var bodyObj = new { text = tweetText };
+        request.AddStringBody(JsonSerializer.Serialize(bodyObj), DataFormat.Json);
+
+        
+        var response = await client.ExecuteAsync(request);
+        if (!response.IsSuccessful)
+        {
+            
+            throw new Exception($"Tweet gönderilemedi. {response.StatusCode} - {response.Content}");
         }
+
+        
+        var resultTweet = JsonSerializer.Deserialize<Tweet>(response.Content);
+        return resultTweet;
     }
 
     public async Task<bool> DeleteTweetAsync(string tweetId)

@@ -1,11 +1,11 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace SocialService.Models
+namespace SocialService.Models.XModels
 {
     public class UserResponse
     {
         [JsonPropertyName("data")]
-        public User data { get; set; }   
+        public User data { get; set; }
     }
 
     public class User

@@ -1,11 +1,11 @@
 ﻿using Autofac.Features.Metadata;
 using System.Text.Json.Serialization;
 
-namespace SocialService.Models
+namespace SocialService.Models.XModels
 {
     public class GetTweetsResponse
     {
-        
+
         [JsonPropertyName("data")]
         public List<Tweet>? Tweets { get; set; }
 

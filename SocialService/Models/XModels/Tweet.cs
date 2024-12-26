@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using Tweetinvi.Models.V2;
 
-namespace SocialService.Models
+namespace SocialService.Models.XModels
 
 
 {

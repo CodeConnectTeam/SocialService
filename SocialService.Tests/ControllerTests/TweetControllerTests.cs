@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
 using SocialService.Controllers;
-using SocialService.Models;
+using SocialService.Models.XModels;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;

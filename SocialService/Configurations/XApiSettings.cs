@@ -7,7 +7,7 @@
             public string ApiSecretKey { get; set; }
             public string BearerToken { get; set; }
             public string AccessToken { get; set; }
-            public string AccessTokenSecret { get; set; }
+            public string AccessSecret { get; set; }
         
     }
 }
