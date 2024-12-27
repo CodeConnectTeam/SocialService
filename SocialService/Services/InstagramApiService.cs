@@ -14,7 +14,7 @@ public class InstagramService
         _users = users.Value;
     }
 
-    public async Task<string> GetProfileAsync()
+    public async Task<InstagramProfile> GetProfileAsync()
     {
         var client = new RestClient("https://graph.instagram.com/v21.0");
         var request = new RestRequest("/me", Method.Get);
@@ -28,7 +28,8 @@ public class InstagramService
             throw new Exception("Failed to fetch profile: " + response.ErrorMessage);
         }
 
-        return response.Content;
+        var result = System.Text.Json.JsonSerializer.Deserialize<InstagramProfile>(response.Content);
+        return result ?? new InstagramProfile();
     }
 
     public async Task<string> CreatePostAsync(string imageUrl = null,
@@ -108,20 +109,5 @@ public class InstagramService
         return result?.Data ?? new List<InstagramMedia>();
     }
 
-    public async Task<string> GetCommentsAsync(string mediaId)
-    {
-        var client = new RestClient("https://graph.instagram.com/v21.0");
-        var request = new RestRequest($"{mediaId}/comments", Method.Get);
 
-        request.AddQueryParameter("fields", "like_count,replies,username,text");
-        request.AddQueryParameter("access_token", _users.AccessToken.AccessTokenLong);
-
-        var response = await client.ExecuteAsync(request);
-        if (!response.IsSuccessful)
-        {
-            throw new Exception("Failed to fetch comments: " + response.ErrorMessage);
-        }
-
-        return response.Content;
-    }
 }

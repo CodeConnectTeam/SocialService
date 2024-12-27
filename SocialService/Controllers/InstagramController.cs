@@ -70,20 +70,6 @@ namespace SocialService.Controllers
             }
         }
 
-        [HttpGet("get-comments/{mediaId}")]
-        public async Task<IActionResult> GetComments(string mediaId)
-        {
-            try
-            {
-                var comments = await _instagramService.GetCommentsAsync(mediaId);
-                return Ok(comments);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
         public class CreatePostRequest
         {
             public string? ImageUrl { get; set; }

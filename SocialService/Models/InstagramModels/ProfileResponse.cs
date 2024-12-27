@@ -1,8 +1,20 @@
-﻿namespace SocialService.Models.InstagramModels
+﻿using System.Text.Json.Serialization;
+
+namespace SocialService.Models.InstagramModels
 {
     public class ProfileResponse
     {
-        public string Id { get; set; }
-        public string Username { get; set; }
+        [JsonPropertyName("data")]
+        public InstagramProfile Data { get; set; }
     }
+
+    public class InstagramProfile
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("username")]
+        public string Name { get; set; }
+    }
+
 }
