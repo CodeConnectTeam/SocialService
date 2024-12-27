@@ -33,7 +33,7 @@ namespace SocialService.Controllers
         {
             try
             {
-                var result = await _instagramService.CreatePostAsync(request.ImageUrl, request.Caption, request.VideoUrl, request.Is_Carousel_Item, request.Media_Type, request.Children);
+                var result = await _instagramService.CreatePostAsync(request.ImageUrl, request.Caption, request.Media_Type);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -74,10 +74,7 @@ namespace SocialService.Controllers
         {
             public string? ImageUrl { get; set; }
             public string? Caption { get; set; }
-            public string? VideoUrl { get; set; }
-            public bool? Is_Carousel_Item { get; set; }
             public string? Media_Type { get; set; }
-            public string? Children { get; set; }
         }
 
         public class PublishPostRequest

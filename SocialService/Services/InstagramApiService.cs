@@ -34,10 +34,7 @@ public class InstagramService
 
     public async Task<DraftPost> CreatePostAsync(string imageUrl = null,
                                               string caption = null,
-                                              string videoUrl = null,
-                                              bool? is_carousel_item = null,
-                                              string media_type = null,
-                                              string children = null)
+                                              string media_type = null)
     {
         var client = new RestClient("https://graph.instagram.com/v21.0");
         var request = new RestRequest($"{_users.Id}/media", Method.Post);
@@ -48,17 +45,10 @@ public class InstagramService
         if (!string.IsNullOrEmpty(caption))
             request.AddParameter("caption", caption);
 
-        if (!string.IsNullOrEmpty(videoUrl))
-            request.AddParameter("video_url", videoUrl);
-
-        if (is_carousel_item.HasValue)
-            request.AddParameter("is_carousel_item", is_carousel_item.Value);
 
         if (!string.IsNullOrEmpty(media_type))
             request.AddParameter("media_type", media_type);
 
-        if (!string.IsNullOrEmpty(children))
-            request.AddParameter("children", children);
 
         request.AddParameter("access_token", _users.AccessToken.AccessTokenLong);
 
