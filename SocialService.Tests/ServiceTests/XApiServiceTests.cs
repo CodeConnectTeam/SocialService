@@ -1,13 +1,17 @@
-﻿using System.Net;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
+using RestSharp;
 using SocialService.Configurations;
-using SocialService.Models;
 using SocialService.Models.XModels;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 public class XApiServiceTests
@@ -15,42 +19,55 @@ public class XApiServiceTests
     private readonly Mock<HttpMessageHandler> _httpMessageHandlerMock;
     private readonly HttpClient _httpClient;
     private readonly XApiService _xApiService;
+    private readonly Mock<IOptions<XApiSettings>> _settingsMock;
 
     public XApiServiceTests()
     {
+        // Mock HttpMessageHandler for HttpClient
         _httpMessageHandlerMock = new Mock<HttpMessageHandler>();
         _httpClient = new HttpClient(_httpMessageHandlerMock.Object)
         {
             BaseAddress = new Uri("https://api.x.com/")
         };
-        var settings = Options.Create(new XApiSettings
+
+        // Mock XApiSettings
+        _settingsMock = new Mock<IOptions<XApiSettings>>();
+        _settingsMock.Setup(s => s.Value).Returns(new XApiSettings
         {
-            BearerToken = "test_token"
+            BearerToken = "test_bearer_token",
+            ApiKey = "test_api_key",
+            ApiSecretKey = "test_api_secret",
+            AccessToken = "test_access_token",
+            AccessSecret = "test_access_secret"
         });
-        _xApiService = new XApiService(_httpClient, settings);
+
+        _xApiService = new XApiService(_httpClient, _settingsMock.Object);
     }
 
     [Fact]
-    public async Task GetUserIdByUsernameAsync_ShouldReturnUserId_WhenApiReturnsSuccess()
+    public async Task GetUserIdByUsernameAsync_ShouldReturnUserId_WhenSuccessful()
     {
         // Arrange
         var username = "testuser";
         var expectedUserId = "12345";
-        var responseContent = JsonSerializer.Serialize(new UserResponse
+        var userResponse = new UserResponse
         {
-            User = new User { Id = expectedUserId }
-        });
+            data = new User { id = expectedUserId }
+        };
 
-        _httpMessageHandlerMock.Protected()
+        _httpMessageHandlerMock
+            .Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Get && req.RequestUri.ToString().Contains(username)),
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Method == HttpMethod.Get &&
+                    req.RequestUri.ToString().Contains($"users/by/username/{username}")),
                 ItExpr.IsAny<CancellationToken>()
             )
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(responseContent)
+                Content = new StringContent(JsonSerializer.Serialize(userResponse), Encoding.UTF8, "application/json")
             });
 
         // Act
@@ -62,42 +79,66 @@ public class XApiServiceTests
     }
 
     [Fact]
-    public async Task GetUserTweetsAsync_ShouldReturnTweets_WhenApiReturnsSuccess()
+    public async Task GetUserIdByUsernameAsync_ShouldThrowException_WhenResponseFails()
     {
         // Arrange
         var username = "testuser";
-        var expectedTweets = new List<Tweet>
-        {
-            new Tweet { Id = "1", Text = "Hello World" },
-            new Tweet { Id = "2", Text = "Another tweet" }
-        };
-        var userResponse = new UserResponse { User = new User { Id = "12345" } };
-        var tweetsResponse = new GetTweetsResponse { Tweets = expectedTweets };
 
-        // Mock GetUserIdByUsernameAsync
-        _httpMessageHandlerMock.Protected()
+        _httpMessageHandlerMock
+            .Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Get && req.RequestUri.ToString().Contains("username")),
+                ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>()
             )
             .ReturnsAsync(new HttpResponseMessage
             {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(JsonSerializer.Serialize(userResponse))
+                StatusCode = HttpStatusCode.BadRequest,
+                ReasonPhrase = "Bad Request"
             });
 
-        // Mock GetUserTweetsAsync
-        _httpMessageHandlerMock.Protected()
-            .Setup<Task<HttpResponseMessage>>(
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<Exception>(() => _xApiService.GetUserIdByUsernameAsync(username));
+        Assert.Contains("Kullanıcı ID'si alınamadı", ex.Message);
+    }
+
+    [Fact]
+    public async Task GetUserTweetsAsync_ShouldReturnTweets_WhenSuccessful()
+    {
+        // Arrange
+        var username = "testuser";
+        var userId = "12345";
+        var expectedTweets = new List<Tweet>
+        {
+            new Tweet { Id = "1", Text = "First tweet" },
+            new Tweet { Id = "2", Text = "Second tweet" }
+        };
+
+        // Mock GetUserIdByUsernameAsync
+        _httpMessageHandlerMock
+            .Protected()
+            .SetupSequence<Task<HttpResponseMessage>>(
                 "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Get && req.RequestUri.ToString().Contains("tweets")),
+                ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>()
             )
+            // First call: Get user ID
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(JsonSerializer.Serialize(tweetsResponse))
+                Content = new StringContent(JsonSerializer.Serialize(new UserResponse
+                {
+                    data = new User { id = userId }
+                }), Encoding.UTF8, "application/json")
+            })
+            // Second call: Get user tweets
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(JsonSerializer.Serialize(new GetTweetsResponse
+                {
+                    Tweets = expectedTweets
+                }), Encoding.UTF8, "application/json")
             });
 
         // Act
@@ -106,92 +147,101 @@ public class XApiServiceTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(expectedTweets.Count, result.Count);
-        Assert.Equal(expectedTweets[0].Text, result[0].Text);
+        Assert.Equal("First tweet", result[0].Text);
     }
 
     [Fact]
-    public async Task GetTweetMetricsAsync_ShouldReturnTweetMetrics_WhenApiReturnsSuccess()
+    public async Task GetUserTweetsAsync_ShouldThrowException_WhenResponseFails()
     {
         // Arrange
-        var tweetId = "12345";
-        var expectedTweet = new Tweet
-        {
-            Id = tweetId,
-            Text = "Hello World",
-            PublicMetrics = new TweetMetrics { LikeCount = 100 }
-        };
-        var responseContent = JsonSerializer.Serialize(expectedTweet);
+        var username = "testuser";
 
-        _httpMessageHandlerMock.Protected()
-            .Setup<Task<HttpResponseMessage>>(
+        _httpMessageHandlerMock
+            .Protected()
+            .SetupSequence<Task<HttpResponseMessage>>(
                 "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Get && req.RequestUri.ToString().Contains(tweetId)),
+                ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>()
             )
+            // First call: Get user ID succeeds
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(responseContent)
+                Content = new StringContent(JsonSerializer.Serialize(new UserResponse
+                {
+                    data = new User { id = "12345" }
+                }), Encoding.UTF8, "application/json")
+            })
+            // Second call: Get tweets fails
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                ReasonPhrase = "Bad Request"
             });
 
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<Exception>(() => _xApiService.GetUserTweetsAsync(username));
+        Assert.Contains("Kullanıcının tweetleri alınamadı", ex.Message);
+    }
+
+    [Fact]
+    public async Task PostTweetAsync_ShouldReturnTweet_WhenSuccessful()
+    {
+        // Arrange
+        var tweetText = "Hello, world!";
+        var expectedTweet = new Tweet { Id = "12345", Text = tweetText };
+
+        var restClientMock = new Mock<RestClient>();
+        var mockResponse = new RestResponse
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = JsonSerializer.Serialize(expectedTweet)
+        };
+
+        restClientMock
+            .Setup(client => client.ExecuteAsync(It.IsAny<RestRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockResponse);
+
+        var service = new XApiService(new HttpClient(), restClientMock.Object, CreateSettings());
+
         // Act
-        var result = await _xApiService.GetTweetMetricsAsync(tweetId);
+        var result = await service.PostTweetAsync(tweetText);
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal(expectedTweet.Id, result.Id);
-        Assert.Equal(expectedTweet.PublicMetrics.LikeCount, result.PublicMetrics.LikeCount);
-    }
-
-    [Fact]
-    public async Task PostTweetAsync_ShouldReturnPostedTweet_WhenApiReturnsSuccess()
-    {
-        // Arrange
-        var tweetText = "Hello, World!";
-        var expectedTweet = new Tweet { Id = "12345", Text = tweetText };
-        var responseContent = JsonSerializer.Serialize(expectedTweet);
-
-        _httpMessageHandlerMock.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Post),
-                ItExpr.IsAny<CancellationToken>()
-            )
-            .ReturnsAsync(new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(responseContent)
-            });
-
-        // Act
-        var result = await _xApiService.PostTweetAsync(tweetText);
-
-        // Assert
-        Assert.NotNull(result);
         Assert.Equal(expectedTweet.Text, result.Text);
     }
 
     [Fact]
-    public async Task DeleteTweetAsync_ShouldReturnTrue_WhenApiReturnsSuccess()
+    public async Task DeleteTweetAsync_ShouldReturnTrue_WhenSuccessful()
     {
         // Arrange
         var tweetId = "12345";
 
-        _httpMessageHandlerMock.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Delete && req.RequestUri.ToString().Contains(tweetId)),
-                ItExpr.IsAny<CancellationToken>()
-            )
-            .ReturnsAsync(new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK
-            });
+        var restClientMock = new Mock<RestClient>();
+        var mockResponse = new RestResponse
+        {
+            StatusCode = HttpStatusCode.OK
+        };
+
+        restClientMock
+            .Setup(client => client.ExecuteAsync(It.IsAny<RestRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockResponse);
+
+        var service = new XApiService(new HttpClient(), restClientMock.Object, CreateSettings());
 
         // Act
-        var result = await _xApiService.DeleteTweetAsync(tweetId);
+        var result = await service.DeleteTweetAsync(tweetId);
 
         // Assert
         Assert.True(result);
+    }
+
+
+    private Mock<XApiService> CreatePartialMockService()
+    {
+        var serviceMock = new Mock<XApiService>(_httpClient, _settingsMock.Object) { CallBase = true };
+        return serviceMock;
     }
 }

@@ -32,7 +32,7 @@ public class InstagramService
         return result ?? new InstagramProfile();
     }
 
-    public async Task<string> CreatePostAsync(string imageUrl = null,
+    public async Task<DraftPost> CreatePostAsync(string imageUrl = null,
                                               string caption = null,
                                               string videoUrl = null,
                                               bool? is_carousel_item = null,
@@ -68,10 +68,11 @@ public class InstagramService
             throw new Exception("Failed to create post: " + response.ErrorMessage);
         }
 
-        return response.Content;
+        var result = System.Text.Json.JsonSerializer.Deserialize<DraftPost>(response.Content);
+        return result ?? new DraftPost();
     }
 
-    public async Task<string> PublishPostAsync(string creationId)
+    public async Task<PublishedPost> PublishPostAsync(string creationId)
     {
         var client = new RestClient("https://graph.instagram.com/v21.0");
         var request = new RestRequest($"{_users.Id}/media_publish", Method.Post);
@@ -85,7 +86,8 @@ public class InstagramService
             throw new Exception("Failed to publish post: " + response.ErrorMessage);
         }
 
-        return response.Content;
+        var result = System.Text.Json.JsonSerializer.Deserialize<PublishedPost>(response.Content);
+        return result ?? new PublishedPost();
     }
 
     public async Task<List<InstagramMedia>> GetMetricsAsync()
