@@ -50,7 +50,7 @@ public class XApiService
 
         var userId  = await GetUserIdByUsernameAsync(username);
 
-        var url = $"https://api.x.com/2/users/{userId}/tweets";
+        var url = $"https://api.x.com/2/users/{userId}/tweets?tweet.fields=public_metrics";
 
         HttpResponseMessage response = await _httpClient.GetAsync(url);
 
@@ -59,11 +59,11 @@ public class XApiService
             string content = await response.Content.ReadAsStringAsync();
             var tweetsResponse = JsonSerializer.Deserialize<GetTweetsResponse>(content);
             var tweetList = tweetsResponse?.Tweets;
-            foreach(var tw in tweetList)
-            {
-                tw.PublicMetrics = GetTweetMetricsAsync(tw.Id).Result.Data;
+            //foreach(var tw in tweetList)
+            //{
+            //    tw.PublicMetrics = GetTweetMetricsAsync(tw.Id).Result.Data;
 
-            }
+            //}
 
             return tweetList;
              
@@ -128,12 +128,12 @@ public class XApiService
             throw new Exception($"Tweet gönderilemedi. {response.StatusCode} - {response.Content}");
         }
 
-        
+        //addDB
         var resultTweet = JsonSerializer.Deserialize<Tweet>(response.Content);
         return resultTweet;
     }
 
-    public async Task<bool> DeleteTweetAsync(string tweetId)
+    public async Task<bool> DeleteTweetAsync(string postId)
     {
         var authenticator = OAuth1Authenticator.ForAccessToken(
         _settings.ApiKey,
@@ -150,12 +150,13 @@ public class XApiService
 
         var client = new RestClient(options);
 
-
-        var request = new RestRequest($"/2/tweets/{tweetId}", Method.Delete);
+        //todo get tweetId from db where id=postId
+        var request = new RestRequest($"/2/tweets/{postId}", Method.Delete);
         var response = await client.ExecuteAsync(request);
 
         if (response.IsSuccessStatusCode)
         {
+            //updateDB
             return true;
         }
         else

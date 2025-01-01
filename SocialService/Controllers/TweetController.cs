@@ -15,8 +15,8 @@ namespace SocialService.Controllers
             _xApiService = xApiService;
         }
 
-        [HttpGet("GetUserTweets/{username}")]
-        public async Task<ActionResult<List<Tweet>>> GetUserTweets(string username)
+        [HttpGet("GetUserTweets")]
+        public async Task<ActionResult<List<Tweet>>> GetUserTweets(string username= "mediasync252408")
         {
 
             try
@@ -30,7 +30,7 @@ namespace SocialService.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("PostTweet")]
         public async Task<ActionResult<Tweet>> PostTweet([FromBody] string tweetText)
         {
             try
@@ -49,11 +49,11 @@ namespace SocialService.Controllers
 
 
         [HttpDelete("DeleteTweet/{tweetId}")]
-        public async Task<ActionResult> DeleteTweet(string tweetId)
+        public async Task<ActionResult> DeleteTweet(string postId)
         {
             try
             {
-                var result = await _xApiService.DeleteTweetAsync(tweetId);
+                var result = await _xApiService.DeleteTweetAsync(postId);
                 if (result)
                 {
                     return Ok();
