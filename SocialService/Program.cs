@@ -1,5 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using RestSharp;
 using SocialService.Configurations;
+using SocialService.Data;
 using SocialService.Interfaces;
 using SocialService.Models.InstagramModels;
 
@@ -14,7 +16,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<XApiSettings>(builder.Configuration.GetSection("XApiSettings"));
 builder.Services.AddHttpClient<XApiService>();
 builder.Services.Configure<InstagramApiSettings>(builder.Configuration.GetSection("InstagramApiSettings"));
-builder.Services.Configure<User>(builder.Configuration.GetSection("InstagramMockUser"));
+builder.Services.Configure<SocialService.Models.InstagramModels.User>(builder.Configuration.GetSection("InstagramMockUser"));
 builder.Services.AddSingleton<InstagramService>();
 builder.Services.AddSingleton<IRestClientWrapper>(provider => new RestClientWrapper("https://graph.instagram.com/v21.0"));
 
