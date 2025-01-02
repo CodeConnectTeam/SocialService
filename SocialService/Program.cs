@@ -1,3 +1,4 @@
+using Autofac.Core;
 using Microsoft.EntityFrameworkCore;
 using RestSharp;
 using SocialService.Configurations;
@@ -19,6 +20,15 @@ builder.Services.Configure<InstagramApiSettings>(builder.Configuration.GetSectio
 builder.Services.Configure<SocialService.Models.InstagramModels.User>(builder.Configuration.GetSection("InstagramMockUser"));
 builder.Services.AddSingleton<InstagramService>();
 builder.Services.AddSingleton<IRestClientWrapper>(provider => new RestClientWrapper("https://graph.instagram.com/v21.0"));
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
