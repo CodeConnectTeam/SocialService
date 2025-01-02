@@ -2,27 +2,29 @@
 using Newtonsoft.Json;
 using RestSharp;
 using SocialService.Configurations;
+using SocialService.Interfaces;
 using SocialService.Models.InstagramModels;
 using System.Text.Json;
 
 public class InstagramService
 {
     private readonly User _users;
+    private readonly IRestClientWrapper _client;
 
-    public InstagramService(IOptions<User> users)
+    public InstagramService(IOptions<User> users, IRestClientWrapper client)
     {
         _users = users.Value;
+        _client = client;
     }
 
     public async Task<InstagramProfile> GetProfileAsync()
     {
-        var client = new RestClient("https://graph.instagram.com/v21.0");
         var request = new RestRequest("/me", Method.Get);
 
         request.AddQueryParameter("fields", "id,username");
         request.AddQueryParameter("access_token", _users.AccessToken.AccessTokenLong);
 
-        var response = await client.ExecuteAsync(request);
+        var response = await _client.ExecuteAsync(request);
         if (!response.IsSuccessful)
         {
             throw new Exception("Failed to fetch profile: " + response.ErrorMessage);
@@ -36,7 +38,6 @@ public class InstagramService
                                               string caption = null,
                                               string media_type = null)
     {
-        var client = new RestClient("https://graph.instagram.com/v21.0");
         var request = new RestRequest($"{_users.Id}/media", Method.Post);
 
         if (!string.IsNullOrEmpty(imageUrl))
@@ -52,7 +53,7 @@ public class InstagramService
 
         request.AddParameter("access_token", _users.AccessToken.AccessTokenLong);
 
-        var response = await client.ExecuteAsync(request);
+        var response = await _client.ExecuteAsync(request);
         if (!response.IsSuccessful)
         {
             throw new Exception("Failed to create post: " + response.ErrorMessage);
@@ -82,14 +83,13 @@ public class InstagramService
 
     public async Task<List<InstagramMedia>> GetMetricsAsync()
     {
-        var client = new RestClient("https://graph.instagram.com/v21.0");
         var request = new RestRequest($"{_users.Id}/media", Method.Get);
 
         request.AddQueryParameter("fields",
             "caption,like_count,comments_count,media_url,permalink,media_type");
         request.AddQueryParameter("access_token", _users.AccessToken.AccessTokenLong);
 
-        var response = await client.ExecuteAsync(request);
+        var response = await _client.ExecuteAsync(request);
 
         if (!response.IsSuccessful)
             throw new Exception("Failed to fetch metrics: " + response.ErrorMessage);

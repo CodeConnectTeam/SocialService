@@ -1,4 +1,6 @@
+using RestSharp;
 using SocialService.Configurations;
+using SocialService.Interfaces;
 using SocialService.Models.InstagramModels;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +16,7 @@ builder.Services.AddHttpClient<XApiService>();
 builder.Services.Configure<InstagramApiSettings>(builder.Configuration.GetSection("InstagramApiSettings"));
 builder.Services.Configure<User>(builder.Configuration.GetSection("InstagramMockUser"));
 builder.Services.AddSingleton<InstagramService>();
+builder.Services.AddSingleton<IRestClientWrapper>(provider => new RestClientWrapper("https://graph.instagram.com/v21.0"));
 
 var app = builder.Build();
 

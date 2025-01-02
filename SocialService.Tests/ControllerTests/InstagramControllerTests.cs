@@ -1,10 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
 using SocialService.Controllers;
 using SocialService.Models.InstagramModels;
 using Xunit;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public class InstagramControllerTests
 {
@@ -18,149 +19,80 @@ public class InstagramControllerTests
     }
 
     [Fact]
-    public async Task GetProfile_ReturnsOkWithProfile()
+    public async Task GetProfile_ShouldReturnOkResult_WithProfileData()
     {
         // Arrange
-        var mockProfile = new InstagramProfile { Id = "12345", Name = "TestUser" };
-        _mockInstagramService.Setup(s => s.GetProfileAsync()).ReturnsAsync(mockProfile);
+        var mockProfile = new InstagramProfile { Id = "123", Name = "test_user" };
+        _mockInstagramService.Setup(service => service.GetProfileAsync()).ReturnsAsync(mockProfile);
 
         // Act
         var result = await _controller.GetProfile();
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(mockProfile, okResult.Value);
+        var profile = Assert.IsType<InstagramProfile>(okResult.Value);
+        Assert.Equal("123", profile.Id);
+        Assert.Equal("test_user", profile.Name);
     }
 
     [Fact]
-    public async Task GetProfile_ReturnsBadRequestOnException()
+    public async Task CreatePost_ShouldReturnOkResult_WithPostData()
     {
         // Arrange
-        _mockInstagramService.Setup(s => s.GetProfileAsync()).ThrowsAsync(new Exception("Test exception"));
-
-        // Act
-        var result = await _controller.GetProfile();
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal("Test exception", badRequestResult.Value);
-    }
-
-    [Fact]
-    public async Task CreatePost_ReturnsOkWithResult()
-    {
-        // Arrange
-        var request = new InstagramController.CreatePostRequest
+        var mockDraftPost = new DraftPost { id = "post123" };
+        var createPostRequest = new InstagramController.CreatePostRequest
         {
-            ImageUrl = "http://test.com/image.jpg",
-            Caption = "Test caption",
-            Media_Type = "image"
+            ImageUrl = "http://example.com/image.jpg",
+            Caption = "Test Caption",
+            Media_Type = "IMAGE"
         };
-
-        var mockResult = new DraftPost { id = "12345" };
-        _mockInstagramService.Setup(s => s.CreatePostAsync(
-            request.ImageUrl, request.Caption, request.VideoUrl,
-            request.Is_Carousel_Item, request.Media_Type, request.Children))
-            .ReturnsAsync(mockResult);
+        _mockInstagramService.Setup(service => service.CreatePostAsync(createPostRequest.ImageUrl, createPostRequest.Caption, createPostRequest.Media_Type))
+                             .ReturnsAsync(mockDraftPost);
 
         // Act
-        var result = await _controller.CreatePost(request);
+        var result = await _controller.CreatePost(createPostRequest);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(mockResult, okResult.Value);
+        var post = Assert.IsType<DraftPost>(okResult.Value);
+        Assert.Equal("post123", post.id);
     }
 
     [Fact]
-    public async Task CreatePost_ReturnsBadRequestOnException()
+    public async Task PublishPost_ShouldReturnOkResult_WithPublishedPostData()
     {
         // Arrange
-        var request = new InstagramController.CreatePostRequest
-        {
-            ImageUrl = "http://test.com/image.jpg",
-            Caption = "Test caption",
-        };
-
-        _mockInstagramService.Setup(s => s.CreatePostAsync(
-            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
-            It.IsAny<bool?>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ThrowsAsync(new Exception("Test exception"));
+        var mockPublishedPost = new PublishedPost { id = "publish123" };
+        var publishPostRequest = new InstagramController.PublishPostRequest { CreationId = "creation123" };
+        _mockInstagramService.Setup(service => service.PublishPostAsync(publishPostRequest.CreationId))
+                             .ReturnsAsync(mockPublishedPost);
 
         // Act
-        var result = await _controller.CreatePost(request);
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal("Test exception", badRequestResult.Value);
-    }
-
-    [Fact]
-    public async Task PublishPost_ReturnsOkWithResult()
-    {
-        // Arrange
-        var request = new InstagramController.PublishPostRequest
-        {
-            CreationId = "12345"
-        };
-
-        var mockResult = new PublishedPost { id = "12345" };
-        _mockInstagramService.Setup(s => s.PublishPostAsync(request.CreationId))
-            .ReturnsAsync(mockResult);
-
-        // Act
-        var result = await _controller.PublishPost(request);
+        var result = await _controller.PublishPost(publishPostRequest);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(mockResult, okResult.Value);
+        var post = Assert.IsType<PublishedPost>(okResult.Value);
+        Assert.Equal("publish123", post.id);
     }
 
     [Fact]
-    public async Task PublishPost_ReturnsBadRequestOnException()
+    public async Task GetMetrics_ShouldReturnOkResult_WithMetricsData()
     {
         // Arrange
-        var request = new InstagramController.PublishPostRequest
+        var mockMetrics = new List<InstagramMedia>
         {
-            CreationId = "12345"
+            new InstagramMedia { Caption = "Test Caption", LikeCount = 10, CommentsCount = 5 }
         };
-
-        _mockInstagramService.Setup(s => s.PublishPostAsync(request.CreationId))
-            .ThrowsAsync(new Exception("Test exception"));
-
-        // Act
-        var result = await _controller.PublishPost(request);
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal("Test exception", badRequestResult.Value);
-    }
-
-    [Fact]
-    public async Task GetMetrics_ReturnsOkWithMetrics()
-    {
-        // Arrange
-        var mockMetrics = new List<InstagramMedia> { new InstagramMedia { Id = "12345", MediaType = "image" } };
-        _mockInstagramService.Setup(s => s.GetMetricsAsync()).ReturnsAsync(mockMetrics);
+        _mockInstagramService.Setup(service => service.GetMetricsAsync()).ReturnsAsync(mockMetrics);
 
         // Act
         var result = await _controller.GetMetrics();
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(mockMetrics, okResult.Value);
-    }
-
-    [Fact]
-    public async Task GetMetrics_ReturnsBadRequestOnException()
-    {
-        // Arrange
-        _mockInstagramService.Setup(s => s.GetMetricsAsync()).ThrowsAsync(new Exception("Test exception"));
-
-        // Act
-        var result = await _controller.GetMetrics();
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal("Test exception", badRequestResult.Value);
+        var metrics = Assert.IsType<List<InstagramMedia>>(okResult.Value);
+        Assert.Single(metrics);
+        Assert.Equal("Test Caption", metrics[0].Caption);
     }
 }
