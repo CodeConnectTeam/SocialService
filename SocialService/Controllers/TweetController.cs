@@ -31,11 +31,11 @@ namespace SocialService.Controllers
         }
 
         [HttpPost("PostTweet")]
-        public async Task<ActionResult<Tweet>> PostTweet([FromBody] string tweetText)
+        public async Task<ActionResult<Tweet>> PostTweet([FromBody] TweetRequest request)
         {
             try
             {
-                var tweet = await _xApiService.PostTweetAsync(tweetText);
+                var tweet = await _xApiService.PostTweetAsync(request.tweetText);
                 return Ok(tweet);
             }
             catch (Exception ex)
@@ -48,7 +48,7 @@ namespace SocialService.Controllers
         
 
 
-        [HttpDelete("DeleteTweet/{tweetId}")]
+        [HttpDelete("DeleteTweet/{postId}")]
         public async Task<ActionResult> DeleteTweet(string postId)
         {
             try
@@ -69,7 +69,10 @@ namespace SocialService.Controllers
             }
         }
 
-
+        public class TweetRequest
+        {
+            public string tweetText { get; set; }
+        }
 
     }
 }
