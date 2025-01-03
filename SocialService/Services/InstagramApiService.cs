@@ -1,20 +1,26 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using RestSharp;
 using SocialService.Configurations;
+using SocialService.Data;
 using SocialService.Interfaces;
 using SocialService.Models.InstagramModels;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Text.Json;
 
 public class InstagramService
 {
     private readonly User _users;
     private readonly IRestClientWrapper _client;
+    private readonly DbContextApplication _db;
 
-    public InstagramService(IOptions<User> users, IRestClientWrapper client)
+    public InstagramService(IOptions<User> users, IRestClientWrapper client, DbContextApplication db)
     {
         _users = users.Value;
         _client = client;
+        _db = db;
     }
 
     public async Task<InstagramProfile> GetProfileAsync()
@@ -63,7 +69,7 @@ public class InstagramService
         return result ?? new DraftPost();
     }
 
-    public async Task<PublishedPost> PublishPostAsync(string creationId)
+    public async Task<PublishedPost> PublishPostAsync(string creationId, string postId)
     {
         var client = new RestClient("https://graph.instagram.com/v21.0");
         var request = new RestRequest($"{_users.Id}/media_publish", Method.Post);
@@ -77,7 +83,14 @@ public class InstagramService
             throw new Exception("Failed to publish post: " + response.ErrorMessage);
         }
 
+
         var result = System.Text.Json.JsonSerializer.Deserialize<PublishedPost>(response.Content);
+
+        //DB logic
+        var publishedPost = _db.InstagramPosts.FirstOrDefault(x => x.id.ToString() == postId);
+        publishedPost.status = "PUBLISHED";
+        _db.SaveChanges();
+
         return result ?? new PublishedPost();
     }
 
@@ -94,12 +107,21 @@ public class InstagramService
         if (!response.IsSuccessful)
             throw new Exception("Failed to fetch metrics: " + response.ErrorMessage);
 
-        
-        var result = System.Text.Json.JsonSerializer.Deserialize<GetMetricsResponse>(response.Content);
 
+        var result = System.Text.Json.JsonSerializer.Deserialize<GetMetricsResponse>(response.Content);
         
+        foreach (var post in result.Data.ToList())
+        {
+            var eachpost = _db.InstagramPosts.FirstOrDefault(x => x.platform_id == post.Id);
+
+            eachpost.caption = post.Caption;
+            eachpost.like_count = post.LikeCount;
+            eachpost.comment_count = post.CommentsCount;
+            eachpost.media_type = post.MediaType;
+            eachpost.image_url = post.MediaUrl;
+        }
+        _db.SaveChanges();
         return result?.Data ?? new List<InstagramMedia>();
     }
-
 
 }

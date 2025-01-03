@@ -9,17 +9,21 @@ using RestSharp.Authenticators;
 using RestSharp;
 using SocialService.Configurations;
 using SocialService.Models.XModels;
+using SocialService.Data;
 
 
 public class XApiService
 {
     private readonly HttpClient _httpClient;
     private readonly SocialService.Configurations.XApiSettings _settings;
+    private readonly DbContextApplication _db;
 
-    public XApiService(HttpClient httpClient, IOptions<XApiSettings> settings)
+
+    public XApiService(HttpClient httpClient, IOptions<XApiSettings> settings, DbContextApplication db)
     {
         _httpClient = httpClient;
         _settings = settings.Value;
+        _db = db;
 
         
         _httpClient.DefaultRequestHeaders.Authorization =
@@ -128,8 +132,9 @@ public class XApiService
             throw new Exception($"Tweet gönderilemedi. {response.StatusCode} - {response.Content}");
         }
 
-        //addDB
+        
         var resultTweet = JsonSerializer.Deserialize<Tweet>(response.Content);
+        //_db.TwitterPosts.Add(resultTweet);
         return resultTweet;
     }
 
@@ -156,7 +161,11 @@ public class XApiService
 
         if (response.IsSuccessStatusCode)
         {
-            //updateDB
+            // Select atılacak
+            //var tweet = _db.TwitterPosts.FirstOrDefault(x=> x.id == postId);
+            //tweet.status = "DELETED";
+            //_db.SaveChanges();
+
             return true;
         }
         else
