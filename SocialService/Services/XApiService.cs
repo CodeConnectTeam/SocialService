@@ -134,24 +134,24 @@ public class XApiService
 
         
         var resultTweet = JsonSerializer.Deserialize<Tweet>(response.Content);
-        //var tw = new TwitterPosts
-        //{
-        //    tweet_text = resultTweet.Text,
-        //    platform_id = resultTweet.Id,
-        //    status = "PUBLİSHED",
-        //    TweetCount = resultTweet.PublicMetrics.TweetCount,
-        //    ReplyCount =resultTweet.PublicMetrics.ReplyCount,
-        //    LikeCount=resultTweet.PublicMetrics.LikeCount,  
-        //    QuoteCount=resultTweet.PublicMetrics.QuoteCount,    
-        //    BookmarkCount=resultTweet.PublicMetrics.BookmarkCount,
-        //    ImpressionCount=resultTweet.PublicMetrics.ImpressionCount
-            
-
-        //};
+        var tw = new TwitterPosts
+        {
+            tweet_text = resultTweet.Text,
+            platform_id = resultTweet.Id,
+            status = "PUBLİSHED",
+            TweetCount = resultTweet.PublicMetrics.TweetCount,
+            ReplyCount = resultTweet.PublicMetrics.ReplyCount,
+            LikeCount = resultTweet.PublicMetrics.LikeCount,
+            QuoteCount = resultTweet.PublicMetrics.QuoteCount,
+            BookmarkCount = resultTweet.PublicMetrics.BookmarkCount,
+            ImpressionCount = resultTweet.PublicMetrics.ImpressionCount
 
 
-        //_db.TwitterPosts.Add(tw);
-        //_db.SaveChanges();
+        };
+
+
+        _db.TwitterPosts.Add(tw);
+        _db.SaveChanges();
 
         return resultTweet;
     }
@@ -179,10 +179,10 @@ public class XApiService
 
         if (response.IsSuccessStatusCode)
         {
-            
-            //var tweet = _db.TwitterPosts.FirstOrDefault(x=> x.platform_id == postId);
-            //tweet.status = "DELETED";
-            //_db.SaveChanges();
+
+            var tweet = _db.TwitterPosts.FirstOrDefault(x => x.platform_id == postId);
+            tweet.status = "DELETED";
+            _db.SaveChanges();
 
             return true;
         }

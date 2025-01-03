@@ -18,7 +18,7 @@ builder.Services.Configure<XApiSettings>(builder.Configuration.GetSection("XApiS
 builder.Services.AddHttpClient<XApiService>();
 builder.Services.Configure<InstagramApiSettings>(builder.Configuration.GetSection("InstagramApiSettings"));
 builder.Services.Configure<SocialService.Models.InstagramModels.User>(builder.Configuration.GetSection("InstagramMockUser"));
-builder.Services.AddSingleton<InstagramService>();
+builder.Services.AddTransient<InstagramService>();
 builder.Services.AddSingleton<IRestClientWrapper>(provider => new RestClientWrapper("https://graph.instagram.com/v21.0"));
 builder.Services.AddCors(options =>
 {
@@ -32,8 +32,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<DbContextApplication>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddScoped<InstagramService>();
-builder.Services.AddScoped<XApiService>();
+//builder.Services.AddScoped<InstagramService>();
+//builder.Services.AddScoped<XApiService>();
 
 var app = builder.Build();
 
