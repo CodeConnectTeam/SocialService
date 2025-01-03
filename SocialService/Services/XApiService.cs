@@ -150,7 +150,7 @@ public class XApiService
         };
 
 
-        _db.TwitterPosts.Add(tw);
+        _db.twitterPosts.Add(tw);
         _db.SaveChanges();
 
         return resultTweet;
@@ -180,7 +180,7 @@ public class XApiService
         if (response.IsSuccessStatusCode)
         {
 
-            var tweet = _db.TwitterPosts.FirstOrDefault(x => x.platform_id == postId);
+            var tweet = _db.twitterPosts.FirstOrDefault(x => x.platform_id == postId);
             tweet.status = "DELETED";
             _db.SaveChanges();
 

@@ -87,7 +87,7 @@ public class InstagramService
         var result = System.Text.Json.JsonSerializer.Deserialize<PublishedPost>(response.Content);
 
         //DB logic
-        var publishedPost = _db.InstagramPosts.FirstOrDefault(x => x.id.ToString() == postId);
+        var publishedPost = _db.instagramPosts.FirstOrDefault(x => x.id.ToString() == postId);
         publishedPost.status = "PUBLISHED";
         _db.SaveChanges();
 
@@ -112,7 +112,7 @@ public class InstagramService
         
         foreach (var post in result.Data.ToList())
         {
-            var eachpost = _db.InstagramPosts.FirstOrDefault(x => x.platform_id == post.Id);
+            var eachpost = _db.instagramPosts.FirstOrDefault(x => x.platform_id == post.Id);
 
             eachpost.caption = post.Caption;
             eachpost.like_count = post.LikeCount;
