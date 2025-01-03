@@ -137,14 +137,14 @@ public class XApiService
         var tw = _db.twitterPosts.FirstOrDefault(x=>x.id==postId);
 
 
-        tw.tweet_text = resultTweet.Text;
+        tw.tweet_text = tweetText;
         tw.status = "PUBLISHED";
-        tw.TweetCount = resultTweet.PublicMetrics.TweetCount;
-        tw.ReplyCount = resultTweet.PublicMetrics.ReplyCount;
-        tw.LikeCount = resultTweet.PublicMetrics.LikeCount;
-        tw.QuoteCount = resultTweet.PublicMetrics.QuoteCount;
-        tw.BookmarkCount = resultTweet.PublicMetrics.BookmarkCount;
-        tw.ImpressionCount = resultTweet.PublicMetrics.ImpressionCount;
+        tw.TweetCount = 0;
+        tw.ReplyCount = 0;
+        tw.LikeCount = 0;
+        tw.QuoteCount = 0;
+        tw.BookmarkCount = 0;
+        tw.ImpressionCount = 0;
         
         _db.SaveChanges();
 
