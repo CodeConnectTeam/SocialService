@@ -81,7 +81,7 @@ namespace SocialService.Controllers
         {
             public string CreationId { get; set; }
 
-            public string postId { get; set; }
+            public int postId { get; set; }
         }
     }
 }

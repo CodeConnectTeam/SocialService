@@ -10,6 +10,7 @@ using RestSharp;
 using SocialService.Configurations;
 using SocialService.Models.XModels;
 using SocialService.Data;
+using Tweetinvi.Core.Extensions;
 
 
 public class XApiService
@@ -99,7 +100,7 @@ public class XApiService
     }
 
 
-    public async Task<Tweet> PostTweetAsync(string tweetText)
+    public async Task<Tweet> PostTweetAsync(string tweetText,int postId)
     {
         var authenticator = OAuth1Authenticator.ForAccessToken(
         _settings.ApiKey,
@@ -132,25 +133,19 @@ public class XApiService
             throw new Exception($"Tweet gönderilemedi. {response.StatusCode} - {response.Content}");
         }
 
-        
         var resultTweet = JsonSerializer.Deserialize<Tweet>(response.Content);
-        var tw = new TwitterPosts
-        {
-            tweet_text = resultTweet.Text,
-            platform_id = resultTweet.Id,
-            status = "PUBLİSHED",
-            TweetCount = resultTweet.PublicMetrics.TweetCount,
-            ReplyCount = resultTweet.PublicMetrics.ReplyCount,
-            LikeCount = resultTweet.PublicMetrics.LikeCount,
-            QuoteCount = resultTweet.PublicMetrics.QuoteCount,
-            BookmarkCount = resultTweet.PublicMetrics.BookmarkCount,
-            ImpressionCount = resultTweet.PublicMetrics.ImpressionCount
+        var tw = _db.twitterPosts.FirstOrDefault(x=>x.id==postId);
 
 
-        };
-
-
-        _db.twitterPosts.Add(tw);
+        tw.tweet_text = resultTweet.Text;
+        tw.status = "PUBLISHED";
+        tw.TweetCount = resultTweet.PublicMetrics.TweetCount;
+        tw.ReplyCount = resultTweet.PublicMetrics.ReplyCount;
+        tw.LikeCount = resultTweet.PublicMetrics.LikeCount;
+        tw.QuoteCount = resultTweet.PublicMetrics.QuoteCount;
+        tw.BookmarkCount = resultTweet.PublicMetrics.BookmarkCount;
+        tw.ImpressionCount = resultTweet.PublicMetrics.ImpressionCount;
+        
         _db.SaveChanges();
 
         return resultTweet;

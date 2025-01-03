@@ -69,7 +69,7 @@ public class InstagramService
         return result ?? new DraftPost();
     }
 
-    public async Task<PublishedPost> PublishPostAsync(string creationId, string postId)
+    public async Task<PublishedPost> PublishPostAsync(string creationId, int postId)
     {
         var client = new RestClient("https://graph.instagram.com/v21.0");
         var request = new RestRequest($"{_users.Id}/media_publish", Method.Post);
@@ -87,7 +87,7 @@ public class InstagramService
         var result = System.Text.Json.JsonSerializer.Deserialize<PublishedPost>(response.Content);
 
         //DB logic
-        var publishedPost = _db.instagramPosts.FirstOrDefault(x => x.id.ToString() == postId);
+        var publishedPost = _db.instagramPosts.FirstOrDefault(x => x.id == postId);
         publishedPost.status = "PUBLISHED";
         _db.SaveChanges();
 

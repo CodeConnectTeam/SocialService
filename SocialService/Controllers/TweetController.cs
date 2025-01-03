@@ -35,7 +35,7 @@ namespace SocialService.Controllers
         {
             try
             {
-                var tweet = await _xApiService.PostTweetAsync(request.tweetText);
+                var tweet = await _xApiService.PostTweetAsync(request.tweetText,request.postId);
                 return Ok(tweet);
             }
             catch (Exception ex)
@@ -72,6 +72,8 @@ namespace SocialService.Controllers
         public class TweetRequest
         {
             public string tweetText { get; set; }
+
+            public int postId { get; set; }
         }
 
     }
