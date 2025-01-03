@@ -87,9 +87,9 @@ public class InstagramService
         var result = System.Text.Json.JsonSerializer.Deserialize<PublishedPost>(response.Content);
 
         //DB logic
-        var publishedPost = _db.InstagramPosts.FirstOrDefault(x => x.id.ToString() == postId);
-        publishedPost.status = "PUBLISHED";
-        _db.SaveChanges();
+        //var publishedPost = _db.InstagramPosts.FirstOrDefault(x => x.id.ToString() == postId);
+        //publishedPost.status = "PUBLISHED";
+        //_db.SaveChanges();
 
         return result ?? new PublishedPost();
     }
@@ -110,17 +110,18 @@ public class InstagramService
 
         var result = System.Text.Json.JsonSerializer.Deserialize<GetMetricsResponse>(response.Content);
         
-        foreach (var post in result.Data.ToList())
-        {
-            var eachpost = _db.InstagramPosts.FirstOrDefault(x => x.platform_id == post.Id);
+        //foreach (var post in result.Data.ToList())
+        //{
+        //    var eachpost = _db.InstagramPosts.FirstOrDefault(x => x.platform_id == post.Id);
 
-            eachpost.caption = post.Caption;
-            eachpost.like_count = post.LikeCount;
-            eachpost.comment_count = post.CommentsCount;
-            eachpost.media_type = post.MediaType;
-            eachpost.image_url = post.MediaUrl;
-        }
-        _db.SaveChanges();
+        //    eachpost.caption = post.Caption;
+        //    eachpost.like_count = post.LikeCount;
+        //    eachpost.comment_count = post.CommentsCount;
+        //    eachpost.media_type = post.MediaType;
+        //    eachpost.image_url = post.MediaUrl;
+        //    
+        //}
+        //_db.SaveChanges();
         return result?.Data ?? new List<InstagramMedia>();
     }
 

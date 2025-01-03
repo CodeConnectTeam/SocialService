@@ -134,7 +134,25 @@ public class XApiService
 
         
         var resultTweet = JsonSerializer.Deserialize<Tweet>(response.Content);
-        //_db.TwitterPosts.Add(resultTweet);
+        //var tw = new TwitterPosts
+        //{
+        //    tweet_text = resultTweet.Text,
+        //    platform_id = resultTweet.Id,
+        //    status = "PUBLİSHED",
+        //    TweetCount = resultTweet.PublicMetrics.TweetCount,
+        //    ReplyCount =resultTweet.PublicMetrics.ReplyCount,
+        //    LikeCount=resultTweet.PublicMetrics.LikeCount,  
+        //    QuoteCount=resultTweet.PublicMetrics.QuoteCount,    
+        //    BookmarkCount=resultTweet.PublicMetrics.BookmarkCount,
+        //    ImpressionCount=resultTweet.PublicMetrics.ImpressionCount
+            
+
+        //};
+
+
+        //_db.TwitterPosts.Add(tw);
+        //_db.SaveChanges();
+
         return resultTweet;
     }
 
@@ -152,17 +170,17 @@ public class XApiService
         {
             Authenticator = authenticator
         };
-
+        
         var client = new RestClient(options);
 
-        //todo get tweetId from db where id=postId
+        
         var request = new RestRequest($"/2/tweets/{postId}", Method.Delete);
         var response = await client.ExecuteAsync(request);
 
         if (response.IsSuccessStatusCode)
         {
-            // Select atılacak
-            //var tweet = _db.TwitterPosts.FirstOrDefault(x=> x.id == postId);
+            
+            //var tweet = _db.TwitterPosts.FirstOrDefault(x=> x.platform_id == postId);
             //tweet.status = "DELETED";
             //_db.SaveChanges();
 

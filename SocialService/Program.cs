@@ -29,9 +29,11 @@ builder.Services.AddCors(options =>
                .AllowAnyHeader();
     });
 });
+
 builder.Services.AddDbContext<DbContextApplication>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddScoped<InstagramService>();
+builder.Services.AddScoped<XApiService>();
 
 var app = builder.Build();
 
