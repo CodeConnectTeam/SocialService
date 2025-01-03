@@ -112,13 +112,25 @@ public class InstagramService
         
         foreach (var post in result.Data.ToList())
         {
-            var eachpost = _db.instagramPosts.FirstOrDefault(x => x.platform_id == post.Id);
+            try
+            {
+                var eachpost = _db.instagramPosts.FirstOrDefault(x => x.platform_id == post.Id);
 
-            eachpost.caption = post.Caption;
-            eachpost.like_count = post.LikeCount;
-            eachpost.comment_count = post.CommentsCount;
-            eachpost.media_type = post.MediaType;
-            eachpost.image_url = post.MediaUrl;
+                if (eachpost == null)
+                    continue; // Skip this iteration if no matching row is found
+
+                // Update the fields
+                eachpost.caption = post.Caption;
+                eachpost.like_count = post.LikeCount;
+                eachpost.comment_count = post.CommentsCount;
+                eachpost.media_type = post.MediaType;
+                eachpost.image_url = post.MediaUrl;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception to track unexpected errors
+                Console.WriteLine($"Error updating post with ID {post.Id}: {ex.Message}");
+            }
 
         }
         _db.SaveChanges();
