@@ -47,7 +47,7 @@ namespace SocialService.Controllers
         {
             try
             {
-                var result = await _instagramService.PublishPostAsync(request.CreationId, request.postId);
+                var result = await _instagramService.PublishPostAsync(request.CreationId);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -81,7 +81,7 @@ namespace SocialService.Controllers
         {
             public string CreationId { get; set; }
 
-            public int postId { get; set; }
+            //public int postId { get; set; }
         }
     }
 }
