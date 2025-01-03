@@ -64,11 +64,16 @@ public class XApiService
             string content = await response.Content.ReadAsStringAsync();
             var tweetsResponse = JsonSerializer.Deserialize<GetTweetsResponse>(content);
             var tweetList = tweetsResponse?.Tweets;
-            //foreach(var tw in tweetList)
-            //{
-            //    tw.PublicMetrics = GetTweetMetricsAsync(tw.Id).Result.Data;
-
-            //}
+            foreach(var tw in tweetList)
+            {
+                var tweet = _db.twitterPosts.FirstOrDefault(x => x.platform_id == tw.Id);
+                tweet.LikeCount = tw.PublicMetrics.LikeCount;
+                tweet.ReplyCount = tw.PublicMetrics.ReplyCount; 
+                tweet.BookmarkCount = tw.PublicMetrics.BookmarkCount;
+                tweet.ImpressionCount = tw.PublicMetrics.ImpressionCount;
+                tweet.TweetCount = tw.PublicMetrics.TweetCount; 
+                _db.SaveChanges();
+            }
 
             return tweetList;
              
