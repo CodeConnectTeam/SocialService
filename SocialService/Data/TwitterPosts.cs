@@ -15,7 +15,7 @@ namespace SocialService.Data
         [StringLength(50)]
         public string? status { get; set; }
 
-        public DateTime created_at { get; set; } = DateTime.Now;
+        public DateTime? created_at { get; set; } = DateTime.Now;
 
         public int? TweetCount { get; set; }
 
