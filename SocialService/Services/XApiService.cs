@@ -74,9 +74,9 @@ public class XApiService
                 tweet.BookmarkCount = tw.PublicMetrics.BookmarkCount;
                 tweet.ImpressionCount = tw.PublicMetrics.ImpressionCount;
                 tweet.TweetCount = tw.PublicMetrics.TweetCount; 
-                _db.SaveChanges();
             }
 
+            _db.SaveChanges();
             return tweetList;
              
             
