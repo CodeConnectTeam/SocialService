@@ -90,6 +90,7 @@ public class InstagramService
         var publishedPost = _db.instagram_posts.FirstOrDefault(x => x.id == postId);
         publishedPost.status = "PUBLISHED";
         publishedPost.platform_id = result.id;
+        publishedPost.created_at= DateTime.Now;
         _db.SaveChanges();
 
         return result ?? new PublishedPost();
