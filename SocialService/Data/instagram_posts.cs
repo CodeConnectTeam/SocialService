@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace SocialService.Data
 {
-    public class InstagramPosts
+    public class instagram_posts
     {
         [Key]
         public int id { get; set; }
