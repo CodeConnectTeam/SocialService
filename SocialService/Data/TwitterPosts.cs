@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace SocialService.Data
 {
-    public class TwitterPosts
+    public class twitter_post
     {
         [Key]
         public int id { get; set; }

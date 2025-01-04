@@ -9,9 +9,9 @@ namespace SocialService.Data
 
         }
 
-        public DbSet<instagram_posts> instagram_posts { get; set; }
+        public DbSet<instagram_post> instagram_posts { get; set; }
 
-        public DbSet<TwitterPosts> twitterPosts { get; set; }
+        public DbSet<twitter_post> twitter_posts { get; set; }
     }
 
 

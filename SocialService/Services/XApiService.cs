@@ -66,7 +66,7 @@ public class XApiService
             var tweetList = tweetsResponse?.Tweets;
             foreach(var tw in tweetList)
             {
-                var tweet = _db.twitterPosts.FirstOrDefault(x => x.platform_id == tw.Id);
+                var tweet = _db.twitter_posts.FirstOrDefault(x => x.platform_id == tw.Id);
                 tweet.LikeCount = tw.PublicMetrics.LikeCount;
                 tweet.ReplyCount = tw.PublicMetrics.ReplyCount; 
                 tweet.BookmarkCount = tw.PublicMetrics.BookmarkCount;
@@ -139,7 +139,7 @@ public class XApiService
         }
 
         var resultTweet = JsonSerializer.Deserialize<Tweet>(response.Content);
-        var tw = _db.twitterPosts.FirstOrDefault(x=>x.id==postId);
+        var tw = _db.twitter_posts.FirstOrDefault(x=>x.id==postId);
 
 
         tw.tweet_text = tweetText;
@@ -180,7 +180,7 @@ public class XApiService
         if (response.IsSuccessStatusCode)
         {
 
-            var tweet = _db.twitterPosts.FirstOrDefault(x => x.platform_id == postId);
+            var tweet = _db.twitter_posts.FirstOrDefault(x => x.platform_id == postId);
             tweet.status = "DELETED";
             _db.SaveChanges();
 
