@@ -8,7 +8,7 @@ namespace SocialService.Data
         [Key]
         public int id { get; set; }
 
-        public string platform_id { get; set; }
+        public string? platform_id { get; set; }
 
         public string? tweet_text { get; set; }
 
