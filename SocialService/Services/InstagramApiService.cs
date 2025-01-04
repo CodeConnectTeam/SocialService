@@ -110,30 +110,30 @@ public class InstagramService
 
         var result = System.Text.Json.JsonSerializer.Deserialize<GetMetricsResponse>(response.Content);
 
-        //foreach (var post in result.Data.ToList())
-        //{
-        //    try
-        //    {
-        //        var eachpost = _db.instagram_posts.FirstOrDefault(x => x.platform_id == post.Id);
+        foreach (var post in result.Data.ToList())
+        {
+            try
+            {
+                var eachpost = _db.instagram_posts.FirstOrDefault(x => x.platform_id == post.Id);
 
-        //        if (eachpost == null)
-        //            continue; // Skip this iteration if no matching row is found
+                if (eachpost == null)
+                    continue; // Skip this iteration if no matching row is found
 
-        //        // Update the fields
-        //        eachpost.caption = post.Caption;
-        //        eachpost.like_count = post.LikeCount;
-        //        eachpost.comment_count = post.CommentsCount;
-        //        eachpost.media_type = post.MediaType;
-        //        eachpost.image_url = post.MediaUrl;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Log the exception to track unexpected errors
-        //        Console.WriteLine($"Error updating post with ID {post.Id}: {ex.Message}");
-        //    }
+                // Update the fields
+                eachpost.caption = post.Caption;
+                eachpost.like_count = post.LikeCount;
+                eachpost.comment_count = post.CommentsCount;
+                eachpost.media_type = post.MediaType;
+                eachpost.image_url = post.MediaUrl;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception to track unexpected errors
+                Console.WriteLine($"Error updating post with ID {post.Id}: {ex.Message}");
+            }
 
-        //}
-        //_db.SaveChanges();
+        }
+        _db.SaveChanges();
         return result?.Data ?? new List<InstagramMedia>();
     }
 
