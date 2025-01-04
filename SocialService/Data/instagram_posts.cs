@@ -20,9 +20,9 @@ namespace SocialService.Data
         [StringLength(50)]
         public string? status { get; set; }
 
-        //public int? like_count { get; set; }
+        public int? like_count { get; set; }
 
-        //public int? comment_count { get; set; }
+        public int? comment_count { get; set; }
 
         public DateTime? created_at { get; set; } = DateTime.Now;
     }
