@@ -105,7 +105,7 @@ public class XApiService
     }
 
 
-    public async Task<Tweet> PostTweetAsync(string tweetText,int postId)
+    public async Task<PostResponse> PostTweetAsync(string tweetText,int postId)
     {
         var authenticator = OAuth1Authenticator.ForAccessToken(
         _settings.ApiKey,
@@ -138,12 +138,14 @@ public class XApiService
             throw new Exception($"Tweet gönderilemedi. {response.StatusCode} - {response.Content}");
         }
 
-        var resultTweet = JsonSerializer.Deserialize<Tweet>(response.Content);
+        var resultTweet = Newtonsoft.Json.JsonConvert.DeserializeObject<PostResponse>(response.Content);
+
         var tw = _db.twitter_posts.FirstOrDefault(x=>x.id==postId);
 
 
         tw.tweet_text = tweetText;
         tw.status = "PUBLISHED";
+        tw.platform_id = resultTweet.Data.Id;
         tw.TweetCount = 0;
         tw.ReplyCount = 0;
         tw.LikeCount = 0;
@@ -153,7 +155,7 @@ public class XApiService
         
         _db.SaveChanges();
 
-        return resultTweet ?? new Tweet();
+        return resultTweet ?? new PostResponse();
     }
 
     public async Task<bool> DeleteTweetAsync(string postId)

@@ -31,7 +31,7 @@ namespace SocialService.Controllers
         }
 
         [HttpPost("PostTweet")]
-        public async Task<ActionResult<Tweet>> PostTweet([FromBody] TweetRequest request)
+        public async Task<ActionResult<PostResponse>> PostTweet([FromBody] TweetRequest request)
         {
             try
             {
