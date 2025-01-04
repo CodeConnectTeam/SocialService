@@ -154,7 +154,7 @@ public class XApiService
         tw.tweet_text = tweetText;
         tw.status = "PUBLISHED";
         tw.platform_id = resultTweet.Data.Id;
-        tw.created_at = DateTime.Now;
+        tw.created_at = DateTime.UtcNow;
         tw.TweetCount = 0;
         tw.ReplyCount = 0;
         tw.LikeCount = 0;
