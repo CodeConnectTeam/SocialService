@@ -108,7 +108,7 @@ public class XApiService
     }
 
 
-    public async Task<PostResponse> PostTweetAsync(string tweetText, int postId)
+    public async Task<PostResponse> PostTweetAsync(string tweetText, int post_id)
     {
         if (_settings == null)
             throw new Exception("Settings are not initialized.");
@@ -145,10 +145,10 @@ public class XApiService
             throw new Exception("Failed to deserialize API response.");
         }
 
-        var tw = _db.twitter_posts.FirstOrDefault(x => x.id == postId);
+        var tw = _db.twitter_posts.FirstOrDefault(x => x.id == post_id);
         if (tw == null)
         {
-            throw new Exception($"No record found for postId: {postId}");
+            throw new Exception($"No record found for postId: {post_id}");
         }
 
         tw.tweet_text = tweetText;
@@ -166,7 +166,7 @@ public class XApiService
         return resultTweet;
     }
 
-    public async Task<bool> DeleteTweetAsync(string postId)
+    public async Task<bool> DeleteTweetAsync(string platform_id)
     {
         var authenticator = OAuth1Authenticator.ForAccessToken(
         _settings.ApiKey,
@@ -184,13 +184,13 @@ public class XApiService
         var client = new RestClient(options);
 
         
-        var request = new RestRequest($"/2/tweets/{postId}", Method.Delete);
+        var request = new RestRequest($"/2/tweets/{platform_id}", Method.Delete);
         var response = await client.ExecuteAsync(request);
 
         if (response.IsSuccessStatusCode)
         {
 
-            var tweet = _db.twitter_posts.FirstOrDefault(x => x.platform_id == postId);
+            var tweet = _db.twitter_posts.FirstOrDefault(x => x.platform_id == platform_id);
             tweet.status = "DELETED";
             _db.SaveChanges();
 

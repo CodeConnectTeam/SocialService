@@ -33,7 +33,7 @@ namespace SocialService.Controllers
         {
             try
             {
-                var result = await _instagramService.CreatePostAsync(request.ImageUrl, request.Caption, request.Media_Type);
+                var result = await _instagramService.CreatePostAsync(request.imageUrl, request.caption, request.media_Type);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -47,7 +47,7 @@ namespace SocialService.Controllers
         {
             try
             {
-                var result = await _instagramService.PublishPostAsync(request.CreationId, request.postId);
+                var result = await _instagramService.PublishPostAsync(request.creationId, request.postId);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -72,14 +72,14 @@ namespace SocialService.Controllers
 
         public class CreatePostRequest
         {
-            public string? ImageUrl { get; set; }
-            public string? Caption { get; set; }
-            public string? Media_Type { get; set; }
+            public string? imageUrl { get; set; }
+            public string? caption { get; set; }
+            public string? media_Type { get; set; }
         }
 
         public class PublishPostRequest
         {
-            public string CreationId { get; set; }
+            public string creationId { get; set; }
 
             public int postId { get; set; }
         }
