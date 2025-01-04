@@ -87,7 +87,7 @@ public class InstagramService
         var result = System.Text.Json.JsonSerializer.Deserialize<PublishedPost>(response.Content);
 
         //DB logic
-        var publishedPost = _db.instagramPosts.FirstOrDefault(x => x.id == postId);
+        var publishedPost = _db.instagram_posts.FirstOrDefault(x => x.id == postId);
         publishedPost.status = "PUBLISHED";
         _db.SaveChanges();
 
@@ -114,7 +114,7 @@ public class InstagramService
         {
             try
             {
-                var eachpost = _db.instagramPosts.FirstOrDefault(x => x.platform_id == post.Id);
+                var eachpost = _db.instagram_posts.FirstOrDefault(x => x.platform_id == post.Id);
 
                 if (eachpost == null)
                     continue; // Skip this iteration if no matching row is found
