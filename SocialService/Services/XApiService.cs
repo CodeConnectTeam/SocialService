@@ -153,7 +153,7 @@ public class XApiService
         
         _db.SaveChanges();
 
-        return resultTweet;
+        return resultTweet ?? new Tweet();
     }
 
     public async Task<bool> DeleteTweetAsync(string postId)

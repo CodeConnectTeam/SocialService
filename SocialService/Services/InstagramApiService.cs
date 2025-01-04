@@ -89,6 +89,7 @@ public class InstagramService
         //DB logic
         var publishedPost = _db.instagram_posts.FirstOrDefault(x => x.id == postId);
         publishedPost.status = "PUBLISHED";
+        publishedPost.platform_id = result.id;
         _db.SaveChanges();
 
         return result ?? new PublishedPost();
@@ -120,11 +121,8 @@ public class InstagramService
                     continue; // Skip this iteration if no matching row is found
 
                 // Update the fields
-                eachpost.caption = post.Caption;
                 eachpost.like_count = post.LikeCount;
                 eachpost.comment_count = post.CommentsCount;
-                eachpost.media_type = post.MediaType;
-                eachpost.image_url = post.MediaUrl;
             }
             catch (Exception ex)
             {
