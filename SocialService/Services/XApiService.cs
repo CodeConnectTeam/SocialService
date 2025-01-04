@@ -107,14 +107,17 @@ public class XApiService
     }
 
 
-    public async Task<PostResponse> PostTweetAsync(string tweetText,int postId)
+    public async Task<PostResponse> PostTweetAsync(string tweetText, int postId)
     {
+        if (_settings == null)
+            throw new Exception("Settings are not initialized.");
+
         var authenticator = OAuth1Authenticator.ForAccessToken(
-        _settings.ApiKey,
-        _settings.ApiSecretKey,
-        _settings.AccessToken,
-        _settings.AccessSecret,
-        OAuthSignatureMethod.HmacSha1
+            _settings.ApiKey,
+            _settings.ApiSecretKey,
+            _settings.AccessToken,
+            _settings.AccessSecret,
+            OAuthSignatureMethod.HmacSha1
         );
 
         var options = new RestClientOptions("https://api.x.com")
@@ -123,27 +126,29 @@ public class XApiService
         };
 
         var client = new RestClient(options);
-
-        
         var request = new RestRequest("/2/tweets", Method.Post);
         request.AddHeader("Content-Type", "application/json");
 
-        
         var bodyObj = new { text = tweetText };
         request.AddStringBody(JsonSerializer.Serialize(bodyObj), DataFormat.Json);
 
-        
         var response = await client.ExecuteAsync(request);
-        if (!response.IsSuccessful)
+        if (!response.IsSuccessful || response.Content == null)
         {
-            
-            throw new Exception($"Tweet gönderilemedi. {response.StatusCode} - {response.Content}");
+            throw new Exception($"Tweet failed. StatusCode: {response.StatusCode}, Content: {response.Content}");
         }
 
         var resultTweet = Newtonsoft.Json.JsonConvert.DeserializeObject<PostResponse>(response.Content);
+        if (resultTweet == null)
+        {
+            throw new Exception("Failed to deserialize API response.");
+        }
 
-        var tw = _db.twitter_posts.FirstOrDefault(x=>x.id==postId);
-
+        var tw = _db.twitter_posts.FirstOrDefault(x => x.id == postId);
+        if (tw == null)
+        {
+            throw new Exception($"No record found for postId: {postId}");
+        }
 
         tw.tweet_text = tweetText;
         tw.status = "PUBLISHED";
@@ -155,10 +160,9 @@ public class XApiService
         tw.QuoteCount = 0;
         tw.BookmarkCount = 0;
         tw.ImpressionCount = 0;
-        
-        _db.SaveChanges();
 
-        return resultTweet ?? new PostResponse();
+        _db.SaveChanges();
+        return resultTweet;
     }
 
     public async Task<bool> DeleteTweetAsync(string postId)
