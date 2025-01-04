@@ -66,7 +66,7 @@ public class XApiService
             var tweetList = tweetsResponse?.Tweets;
             foreach(var tw in tweetList)
             {
-                var tweet = _db.twitter_posts.FirstOrDefault(x => x.platform_id == tw.Id);
+                var tweet = _db.twitter_posts.FirstOrDefault(x => x.platform_id == tw.Id && x.status == "PUBLISHED");
                 tweet.LikeCount = tw.PublicMetrics.LikeCount;
                 tweet.ReplyCount = tw.PublicMetrics.ReplyCount; 
                 tweet.BookmarkCount = tw.PublicMetrics.BookmarkCount;
