@@ -28,5 +28,6 @@ namespace SocialService.Data
         public int? BookmarkCount { get; set; }
 
         public int? ImpressionCount { get; set; }
+        public DateTime scheduled_time { get; set; }
     }
 }

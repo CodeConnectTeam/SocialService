@@ -25,5 +25,7 @@ namespace SocialService.Data
         public int? comment_count { get; set; }
 
         public DateTime? created_at { get; set; } = DateTime.Now;
+
+        public DateTime scheduled_time { get; set; }
     }
 }
