@@ -1,158 +1,156 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Moq;
-using SocialService.Controllers;
-using SocialService.Models.XModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
+using SocialService.Controllers;
+using SocialService.Models;
+using SocialService.Models.XModels;
 using Xunit;
 
-public class TweetControllerTests
+namespace SocialService.Tests.Controllers
 {
-    private readonly Mock<XApiService> _xApiServiceMock;
-    private readonly TweetController _tweetController;
-
-    public TweetControllerTests()
+    public class TweetControllerTests
     {
-        _xApiServiceMock = new Mock<XApiService>();
-        _tweetController = new TweetController(_xApiServiceMock.Object);
-    }
+        private readonly Mock<XApiService> _xApiServiceMock;
+        private readonly TweetController _controller;
 
-    [Fact]
-    public async Task GetUserTweets_ShouldReturnOk_WhenServiceReturnsTweets()
-    {
-        // Arrange
-        var username = "testuser";
-        var mockTweets = new List<Tweet>
+        public TweetControllerTests()
         {
-            new Tweet { Id = "1", Text = "First tweet" },
-            new Tweet { Id = "2", Text = "Second tweet" }
-        };
+            _xApiServiceMock = new Mock<XApiService>();
+            _controller = new TweetController(_xApiServiceMock.Object);
+        }
 
-        _xApiServiceMock
-            .Setup(s => s.GetUserTweetsAsync(username))
-            .ReturnsAsync(mockTweets);
-
-        // Act
-        var result = await _tweetController.GetUserTweets(username);
-
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var tweets = Assert.IsType<List<Tweet>>(okResult.Value);
-        Assert.Equal(2, tweets.Count);
-        Assert.Equal("First tweet", tweets[0].Text);
-    }
-
-    [Fact]
-    public async Task GetUserTweets_ShouldReturnBadRequest_WhenServiceThrowsException()
-    {
-        // Arrange
-        var username = "testuser";
-
-        _xApiServiceMock
-            .Setup(s => s.GetUserTweetsAsync(username))
-            .ThrowsAsync(new Exception("Service error"));
-
-        // Act
-        var result = await _tweetController.GetUserTweets(username);
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal("Service error", badRequestResult.Value);
-    }
-
-    [Fact]
-    public async Task PostTweet_ShouldReturnOk_WhenServiceCreatesTweet()
-    {
-        // Arrange
-        var tweetText = "Hello from unit test!";
-        var mockTweet = new Tweet
+        [Fact]
+        public async Task GetUserTweets_ReturnsOkResult_WhenServiceSucceeds()
         {
-            Id = "123",
-            Text = tweetText
-        };
+            // Arrange
+            var mockTweets = new List<Tweet>
+            {
+                new Tweet { Id = "1", Text = "Hello World" },
+                new Tweet { Id = "2", Text = "Second tweet" }
+            };
+            _xApiServiceMock.Setup(s => s.GetUserTweetsAsync(It.IsAny<string>()))
+                .ReturnsAsync(mockTweets);
 
-        _xApiServiceMock
-            .Setup(s => s.PostTweetAsync(tweetText))
-            .ReturnsAsync(mockTweet);
+            // Act
+            var result = await _controller.GetUserTweets("testuser");
 
-        // Act
-        var result = await _tweetController.PostTweet(tweetText);
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            Assert.Equal(mockTweets, okResult.Value);
+        }
 
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedTweet = Assert.IsType<Tweet>(okResult.Value);
-        Assert.Equal("123", returnedTweet.Id);
-        Assert.Equal(tweetText, returnedTweet.Text);
-    }
+        [Fact]
+        public async Task GetUserTweets_ReturnsBadRequest_WhenServiceThrowsException()
+        {
+            // Arrange
+            _xApiServiceMock.Setup(s => s.GetUserTweetsAsync(It.IsAny<string>()))
+                .ThrowsAsync(new Exception("Service error"));
 
-    [Fact]
-    public async Task PostTweet_ShouldReturnBadRequest_WhenServiceThrowsException()
-    {
-        // Arrange
-        var tweetText = "This will fail";
+            // Act
+            var result = await _controller.GetUserTweets("testuser");
 
-        _xApiServiceMock
-            .Setup(s => s.PostTweetAsync(tweetText))
-            .ThrowsAsync(new Exception("Posting error"));
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal("Service error", badRequestResult.Value);
+        }
 
-        // Act
-        var result = await _tweetController.PostTweet(tweetText);
+        [Fact]
+        public async Task PostTweet_ReturnsOkResult_WhenServiceSucceeds()
+        {
+            // Arrange
+            var mockResponse = new PostResponse
+            {
+                Data = new PostResponseTweet
+                {
+                    Id = "123",
+                    Text = "Posted successfully"
+                }
+            };
 
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal("Posting error", badRequestResult.Value);
-    }
+            var request = new TweetController.TweetRequest
+            {
+                tweetText = "Test tweet",
+                post_id = 1
+            };
 
-    [Fact]
-    public async Task DeleteTweet_ShouldReturnOk_WhenDeletionIsSuccessful()
-    {
-        // Arrange
-        var tweetId = "123";
+            _xApiServiceMock.Setup(s => s.PostTweetAsync(request.tweetText, request.post_id))
+                .ReturnsAsync(mockResponse);
 
-        _xApiServiceMock
-            .Setup(s => s.DeleteTweetAsync(tweetId))
-            .ReturnsAsync(true);
+            // Act
+            var result = await _controller.PostTweet(request);
 
-        // Act
-        var result = await _tweetController.DeleteTweet(tweetId);
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            Assert.Equal(mockResponse, okResult.Value);
+        }
 
-        // Assert
-        Assert.IsType<OkResult>(result);
-    }
+        [Fact]
+        public async Task PostTweet_ReturnsBadRequest_WhenServiceThrowsException()
+        {
+            // Arrange
+            var request = new TweetController.TweetRequest
+            {
+                tweetText = "Test tweet",
+                post_id = 1
+            };
 
-    [Fact]
-    public async Task DeleteTweet_ShouldReturnBadRequest_WhenDeletionFails()
-    {
-        // Arrange
-        var tweetId = "123";
+            _xApiServiceMock.Setup(s => s.PostTweetAsync(request.tweetText, request.post_id))
+                .ThrowsAsync(new Exception("Failed to post tweet"));
 
-        _xApiServiceMock
-            .Setup(s => s.DeleteTweetAsync(tweetId))
-            .ReturnsAsync(false);
+            // Act
+            var result = await _controller.PostTweet(request);
 
-        // Act
-        var result = await _tweetController.DeleteTweet(tweetId);
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal("Failed to post tweet", badRequestResult.Value);
+        }
 
-        // Assert
-        Assert.IsType<BadRequestResult>(result);
-    }
+        [Fact]
+        public async Task DeleteTweet_ReturnsOkResult_WhenServiceSucceeds()
+        {
+            // Arrange
+            var platformId = "123";
+            _xApiServiceMock.Setup(s => s.DeleteTweetAsync(platformId))
+                .ReturnsAsync(true);
 
-    [Fact]
-    public async Task DeleteTweet_ShouldReturnBadRequest_WhenServiceThrowsException()
-    {
-        // Arrange
-        var tweetId = "123";
+            // Act
+            var result = await _controller.DeleteTweet(platformId);
 
-        _xApiServiceMock
-            .Setup(s => s.DeleteTweetAsync(tweetId))
-            .ThrowsAsync(new Exception("Deletion error"));
+            // Assert
+            Assert.IsType<OkResult>(result);
+        }
 
-        // Act
-        var result = await _tweetController.DeleteTweet(tweetId);
+        [Fact]
+        public async Task DeleteTweet_ReturnsBadRequest_WhenServiceFails()
+        {
+            // Arrange
+            var platformId = "123";
+            _xApiServiceMock.Setup(s => s.DeleteTweetAsync(platformId))
+                .ReturnsAsync(false);
 
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal("Deletion error", badRequestResult.Value);
+            // Act
+            var result = await _controller.DeleteTweet(platformId);
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result);
+        }
+
+        [Fact]
+        public async Task DeleteTweet_ReturnsBadRequest_WhenServiceThrowsException()
+        {
+            // Arrange
+            var platformId = "123";
+            _xApiServiceMock.Setup(s => s.DeleteTweetAsync(platformId))
+                .ThrowsAsync(new Exception("Failed to delete tweet"));
+
+            // Act
+            var result = await _controller.DeleteTweet(platformId);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Failed to delete tweet", badRequestResult.Value);
+        }
     }
 }

@@ -5,7 +5,10 @@ VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocialService", "SocialService\SocialService.csproj", "{D6F71E0D-0255-480A-A6BC-E52E5A8496AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialService.Tests", "SocialService.Tests\SocialService.Tests.csproj", "{6EF1E68A-205A-425B-80F5-27B070173856}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocialService.Tests", "SocialService.Tests\SocialService.Tests.csproj", "{6EF1E68A-205A-425B-80F5-27B070173856}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D6F71E0D-0255-480A-A6BC-E52E5A8496AD} = {D6F71E0D-0255-480A-A6BC-E52E5A8496AD}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
